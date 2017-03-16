@@ -238,7 +238,6 @@ typedef struct{
     
     CGContextSetLineWidth(context, saCircleLineWidth);
     
-    UIColor *startCircleColor = [sector.color colorWithAlphaComponent:0.3];
     UIColor *circleColor = sector.color;
     UIColor *endCircleColor = [[UIColor grayColor] colorWithAlphaComponent:0.1];
     
@@ -248,22 +247,10 @@ typedef struct{
     CGFloat y = drawInf.circleCenter.y;
     CGFloat r = drawInf.radius;
     
-    
-    //start circle line
-    [startCircleColor setStroke];
-    CGContextAddArc(context, x, y, r, self.startAngle, drawInf.circleOffsetAngle, 0);
-    CGContextStrokePath(context);
-    
     //circle line
     [circleColor setStroke];
     CGContextAddArc(context, x, y, r, drawInf.circleOffsetAngle, drawInf.circleLineAngle, 0);
     CGContextStrokePath(context);
-    
-    //end circle line
-    [endCircleColor setStroke];
-    CGContextAddArc(context, x, y, r, drawInf.circleLineAngle, drawInf.circleEmptyAngle, 0);
-    CGContextStrokePath(context);
-    
     
     //clearing place for start marker
     CGContextSaveGState(context);
@@ -293,23 +280,6 @@ typedef struct{
     [[circleColor colorWithAlphaComponent:drawInf.endMarkerAlpha] setStroke];
     CGContextAddArc(context, drawInf.endMarkerCenter.x, drawInf.endMarkerCenter.y, drawInf.endMarkerRadius, 0.0, 6.28, 0);
     CGContextStrokePath(context);
-    
-    //text on markers
-    NSString *markerStrTemplate = [@"%.0f" stringByReplacingOccurrencesOfString:@"0" withString:[NSString stringWithFormat:@"%i", self.numbersAfterPoint]];
-    NSString *startMarkerStr = [NSString stringWithFormat:markerStrTemplate, sector.startValue];
-    NSString *endMarkerStr = [NSString stringWithFormat:markerStrTemplate, sector.endValue];
-    
-    //drawing start marker's text
-    [self drawString:startMarkerStr
-            withFont:[UIFont boldSystemFontOfSize:drawInf.startMarkerFontSize]
-               color:[circleColor colorWithAlphaComponent:drawInf.startMarkerAlpha]
-          withCenter:drawInf.startMarkerCenter];
-    
-    //drawing end marker's text
-    [self drawString:endMarkerStr
-            withFont:[UIFont boldSystemFontOfSize:drawInf.endMarkerFontize]
-               color:[circleColor colorWithAlphaComponent:drawInf.endMarkerAlpha]
-          withCenter:drawInf.endMarkerCenter];
 }
 
 
