@@ -203,6 +203,12 @@ typedef struct{
         [self valueChangedNotification];
     }
     
+    if (trackingSector.startValue > trackingSector.endValue) {
+        double temp = trackingSector.startValue;
+        trackingSector.startValue = trackingSector.endValue;
+        trackingSector.endValue = temp;
+        trackingSectorStartMarker = !trackingSectorStartMarker;
+    }
     [self setNeedsDisplay];
 }
 
