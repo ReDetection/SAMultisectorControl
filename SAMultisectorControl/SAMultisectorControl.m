@@ -40,6 +40,9 @@ typedef struct{
     
 } SASectorDrawingInformation;
 
+@interface SAMultisectorControl () <UIGestureRecognizerDelegate>
+
+@end
 
 @implementation SAMultisectorControl{
     NSMutableArray *sectorsArray;
@@ -47,6 +50,7 @@ typedef struct{
     SAMultisectorSector *trackingSector;
     SASectorDrawingInformation trackingSectorDrawInf;
     BOOL trackingSectorStartMarker;
+    UIPanGestureRecognizer *panRecognizer;
 }
 
 #pragma mark - Initializators
@@ -75,6 +79,10 @@ typedef struct{
 
 - (void) setupDefaultConfigurations{
     sectorsArray = [NSMutableArray new];
+    panRecognizer = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(panGestureFired:)];
+    panRecognizer.delegate = self;
+    panRecognizer.cancelsTouchesInView = NO;
+    [self addGestureRecognizer:panRecognizer];
     self.sectorsRadius = 45.0;
     self.backgroundColor = [UIColor clearColor];
     self.startAngle = toRadians(270);
@@ -113,7 +121,7 @@ typedef struct{
 
 #pragma mark - Events manipulator
 
-- (BOOL) beginTrackingWithTouch:(UITouch *)touch withEvent:(UIEvent *)event{
+- (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldReceiveTouch:(UITouch *)touch {
     CGPoint touchPoint = [touch locationInView:self];
     
     for(NSUInteger i = 0; i < sectorsArray.count; i++){
@@ -143,8 +151,12 @@ typedef struct{
     return NO;
 }
 
-- (BOOL) continueTrackingWithTouch:(UITouch *)touch withEvent:(UIEvent *)event{
-    CGPoint touchPoint = [touch locationInView:self];
+- (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldBeRequiredToFailByGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer {
+    return YES;
+}
+
+- (IBAction)panGestureFired:(UIPanGestureRecognizer *)sender {
+    CGPoint touchPoint = [sender locationInView:self];
     CGPoint ceter = [self multiselectCenter];
     SAPolarCoordinate polar = decartToPolar(ceter, touchPoint);
     
@@ -163,14 +175,12 @@ typedef struct{
                 trackingSector.startValue = trackingSector.minValue;
                 [self valueChangedNotification];
                 [self setNeedsDisplay];
-                return YES;
             }
         }
         if(newValue >= trackingSector.endValue){
             trackingSector.startValue = trackingSector.endValue;
             [self valueChangedNotification];
             [self setNeedsDisplay];
-            return YES;
         }
         trackingSector.startValue = newValue;
         [self valueChangedNotification];
@@ -182,22 +192,18 @@ typedef struct{
                 trackingSector.endValue = trackingSector.maxValue;
                 [self valueChangedNotification];
                 [self setNeedsDisplay];
-                return YES;
             }
         }
         if(newValue <= trackingSector.startValue){
             trackingSector.endValue = trackingSector.startValue;
             [self valueChangedNotification];
             [self setNeedsDisplay];
-            return YES;
         }
         trackingSector.endValue = newValue;
         [self valueChangedNotification];
     }
     
     [self setNeedsDisplay];
-    
-    return YES;
 }
 
 - (void) endTrackingWithTouch:(UITouch *)touch withEvent:(UIEvent *)event{
